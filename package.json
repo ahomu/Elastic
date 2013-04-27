@@ -1,0 +1,17 @@
+{
+  "name": "Elastic.js",
+  "version": "0.0.0",
+  "description": "ERROR: No README.md file found!",
+  "main": "Guntfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.3.1",
+    "grunt-contrib-concat": "~0.3.0"
+  }
+}
