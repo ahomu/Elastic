@@ -2,6 +2,7 @@ module.exports = function(grunt) {
 
   var RE_USE_STRICT_STATEMENT = /(^|\n)[ \t]*('use strict'|"use strict");?\s*/g,
       RE_CONSOLE_METHODS      = /console.[\w]+\(.*?(\w*\(.*\))*\);/g,
+      BANNER_TEMPLATE_STRING  = '/*! <%= pkg.name %> - v<%= pkg.version %> ( <%= grunt.template.today("yyyy-mm-dd") %> ) - <%= pkg.license %> */',
       BUILD_ORDERED_LIST      = [
         'src/main.js',
         'src/helper.js',
@@ -18,7 +19,7 @@ module.exports = function(grunt) {
     concat: {
       options: {
         stripBanners: true,
-        banner: ['/*! <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */',
+        banner: [BANNER_TEMPLATE_STRING,
                  '(function() {',
                  '',
                  '"use strict";',
@@ -46,6 +47,17 @@ module.exports = function(grunt) {
         }
       }
     },
+    uglify: {
+      options: {
+        report: 'gzip',
+        preserveComments: 'some'
+      },
+      dist: {
+        files: {
+          'dist/elastic.min.js': ['dist/elastic.js']
+        }
+      }
+    },
     watch: {
       files: ['src/**/*.js'],
       tasks: ['concat:debug'],
@@ -57,10 +69,11 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Default task(s).
-  grunt.registerTask('default', ['concat']);
+  grunt.registerTask('default', ['concat', 'uglify']);
   grunt.registerTask('devel', ['watch']);
 
 };
