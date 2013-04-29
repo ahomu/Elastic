@@ -18,8 +18,7 @@ var ViewDomain = AbstractDomain.extends({
    *
    * @property {Object}
    */
-  events: {
-  },
+  events: {},
 
   /**
    *     ui: {
@@ -29,8 +28,7 @@ var ViewDomain = AbstractDomain.extends({
    *
    * @property {Object}
    */
-  ui: {
-  },
+  ui: {},
 
   /**
    *     components: {
@@ -40,9 +38,7 @@ var ViewDomain = AbstractDomain.extends({
    *
    * @property {Object}
    */
-  components: {
-
-  },
+  components: {},
 
   /**
    * @constructor

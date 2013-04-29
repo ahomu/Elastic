@@ -7,24 +7,23 @@ window.Elastic = {
   klass : klass,
   domain: {
     Layout   : LayoutDomain,
-    View     : ViewDomain
-//    ,
-//    Compontnt: ComponentDomain,
-//    Element  : ElementDomain
+    View     : ViewDomain,
+    Compontnt: ComponentDomain,
+    Element  : ElementDomain
   },
   exception: {
     Runtime  : RuntimeException,
     Logic    : LogicException
-//  },
-//  util: {
-//    History  : History,
-//    Router   : Router,
-//    Storage  : Storage,
-//    Validator: Validator
-//  },
-//  trait: {
-//    AsyncCallback: AsyncCallbackTrait,
-//    Observable   : ObservableTrait
+  },
+  util: {
+    History  : History,
+    Router   : Router,
+    Storage  : Storage,
+    Validator: Validator
+  },
+  trait: {
+    AsyncCallback: AsyncCallbackTrait,
+    Observable   : ObservableTrait
   }
 };
 
