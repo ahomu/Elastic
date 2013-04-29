@@ -153,7 +153,7 @@ function of(constructor_or_members, members) {
    * @method extends
    * @param {Function|Object} constructor_or_child
    * @param {Object} [child]
-   * @return {Object}
+   * @return {Klass}
    */
   Constructor.extends = __extends;
   Object.defineProperty(Constructor, 'extends', DEFINE_NOT_WRITABLE);
@@ -175,7 +175,7 @@ function of(constructor_or_members, members) {
    * @method with
    * @param {Object} trait
    * @param {Object} [aliases]
-   * @return {Object}
+   * @return {Klass}
    */
   Constructor.with = __with;
   Object.defineProperty(Constructor, 'with', DEFINE_NOT_WRITABLE);
@@ -186,7 +186,7 @@ function of(constructor_or_members, members) {
    *     var instance = Klass.create();
    *
    * @method create
-   * @return {Instance}
+   * @return {*}
    */
   Constructor.create = __create;
   Object.defineProperty(Constructor, 'create', DEFINE_NOT_WRITABLE);
