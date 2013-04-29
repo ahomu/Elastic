@@ -31,8 +31,6 @@ var LayoutDomain = AbstractDomain.extends({
    * @param {Object} options
    */
   constructor: function(options) {
-    this.onCreate();
-
     if (this.name === UNDEFINED_UNIQUE_NAME) {
       throw new LogicException('You must specify a unique name for the Layout')
     }
@@ -46,6 +44,8 @@ var LayoutDomain = AbstractDomain.extends({
     if (typeof this.el === 'string') {
       this._element(this._selector(this.el));
     }
+
+    this.onCreate();
   },
 
   /**

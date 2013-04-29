@@ -48,28 +48,30 @@ var ViewDomain = AbstractDomain.extends({
    * @constructor
    */
   constructor: function() {
-    this.onCreate();
-
+    if (typeof this.el === 'string') {
+      this._element(this._selector(this.el));
+    }
     if (this.name === UNDEFINED_UNIQUE_NAME) {
       throw new LogicException('You must specify a unique name for the View')
     }
+    this.onCreate();
   },
 
   /**
    * @param {HTMLElement} el
    */
   attachElement: function(el) {
-    this.onAttach(el);
-
     this._element(el);
+
+    this.onAttach(el);
 
     this.delegateEvents();
   },
 
   detachElement: function() {
-    this.onDetach();
-
     this.el = this.$el = null;
+
+    this.onDetach();
 
     this.undelegateEvents();
   },
