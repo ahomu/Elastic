@@ -3,7 +3,7 @@
 /**
  * @class Elastic
  */
-window.Elastic = {
+var Elastic = {
   klass : klass,
   domain: {
     Layout   : LayoutDomain,
@@ -28,8 +28,19 @@ window.Elastic = {
 };
 
 // for RequireJS
-if (typeof window.define == 'function' && typeof window.define.amd == 'object') {
+if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
   window.define(function() {
-    return window.Elastic;
+    return Elastic;
   });
+}
+// for Node.js & browserify
+else if (typeof module == 'object' && module &&
+         typeof exports == 'object' && exports &&
+         module.exports == exports
+  ) {
+  module.exports = Elastic;
+}
+// for Browser
+else {
+  window.Elastic = Elastic;
 }

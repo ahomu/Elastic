@@ -20,13 +20,13 @@ module.exports = function(grunt) {
       options: {
         stripBanners: true,
         banner: [BANNER_TEMPLATE_STRING,
-                 '(function() {',
+                 '(function(window) {',
                  '',
                  '"use strict";',
                  '',
                  ''].join('\n'),
         footer: ['',
-                 '})();'].join('\n')
+                 '})(this);'].join('\n')
       },
       dist: {
         src: BUILD_ORDERED_LIST,
