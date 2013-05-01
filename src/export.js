@@ -8,8 +8,7 @@ var Elastic = {
   domain: {
     Layout   : LayoutDomain,
     View     : ViewDomain,
-    Compontnt: ComponentDomain,
-    Element  : ElementDomain
+    Compontnt: ComponentDomain
   },
   exception: {
     Runtime  : RuntimeException,
