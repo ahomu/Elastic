@@ -4,7 +4,15 @@
  * @class Elastic
  */
 var Elastic = {
+  // like OOP
   klass : klass,
+
+  // shorthand
+  Layout   : LayoutDomain,
+  View     : ViewDomain,
+  Component: ComponentDomain,
+
+  // classes
   domain: {
     Layout   : LayoutDomain,
     View     : ViewDomain,
