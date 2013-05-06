@@ -26,7 +26,8 @@ var Elastic = {
     History  : History,
     Router   : Router,
     Storage  : Storage,
-    Validator: Validator
+    Validator: Validator,
+    DomDelegation: DomDelegation
   },
   trait: {
     AsyncCallback: AsyncCallbackTrait,
