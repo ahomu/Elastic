@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @class Validator
+ * @class
  * @extend Klass
  */
 var Validator = klass.of({

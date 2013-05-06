@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @class ViewDomain
+ * @class
  * @extends AbstractDomain
  */
 var ViewDomain = AbstractDomain.extends({

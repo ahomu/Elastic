@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @class ComponentDomain
+ * @class
  * @extends AbstractDomain
  */
 var ComponentDomain = AbstractDomain.extends({
@@ -24,6 +24,10 @@ var ComponentDomain = AbstractDomain.extends({
    * @property {Object}
    */
   ui: {},
+
+  constructor: function(el) {
+
+  },
 
   handleEvent: function(evt) {
     // event.target.webkitMatchesSelector();

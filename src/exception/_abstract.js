@@ -2,7 +2,7 @@
 
 /**
  * @abstract
- * @class AbstractException
+ * @class
  * @extends Klass
  */
 var AbstractException = klass.of({

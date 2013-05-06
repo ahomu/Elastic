@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @class Router
+ * @class
  * @extend Klass
  */
 var Router = klass.of({

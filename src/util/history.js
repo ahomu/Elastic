@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @class History
+ * @class
  * @extend Klass
  */
 var History = klass.of({

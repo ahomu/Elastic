@@ -2,7 +2,7 @@
 
 /**
  * @abstract
- * @class AbstractDomain
+ * @class
  * @extends Klass
  */
 var AbstractDomain = klass.of({

@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @class RuntimeException
+ * @class
  * @extends AbstractException
  */
 var RuntimeException = AbstractException.extends({

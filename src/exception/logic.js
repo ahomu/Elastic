@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @class LogicException
+ * @class
  * @extends AbstractException
  */
 var LogicException = AbstractException.extends({

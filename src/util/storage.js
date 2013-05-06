@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @class Storage
+ * @class
  * @extend Klass
  */
 var Storage = klass.of({
