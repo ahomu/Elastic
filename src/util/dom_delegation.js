@@ -1,6 +1,7 @@
 'use strict';
 
 /**
+ * Unique id number for delegation original handler.
  *
  * @type {number}
  */
@@ -14,16 +15,32 @@ var DOM_DELEGATION_UID = 0;
  */
 var DomDelegation = klass.of({
   /**
+   * DOM Events delegation root element
+   *
    * @type {HTMLElement}
    */
   _root: null,
 
   /**
+   * Use for bubbling 'event.target' matching defined selector.
+   * If run on the WebKit when `_mather` is `webkitMathcesSelector`
+   *
    * @type {String}
    */
   _matcher: null,
 
   /**
+   * That structure object stores assigned delegate handlers.
+   *
+   * _stack : {
+   *   {EventHandler}.uid: [
+   *     {DelegateHandler}
+   *   ]
+   * }
+   *
+   * DelegateHandler has own event type and assigned selector
+   * Compare those properties when remove handler
+   *
    * @type {Object}
    */
   _stack: {},
@@ -33,6 +50,18 @@ var DomDelegation = klass.of({
    * @param {HTMLElement} el
    */
   constructor: function(el) {
+    if (el) {
+      this.setRoot(el);
+    }
+  },
+
+  /**
+   * @param {HTMLElement} el
+   */
+  setRoot: function(el) {
+    if (isElement(this._root)) {
+      this.remove();
+    }
     this._root    = el;
     this._matcher = detectVendorMethodName(el, 'matchesSelector');
   },
@@ -60,19 +89,19 @@ var DomDelegation = klass.of({
     var that = this, uid, delegateHandler;
 
     delegateHandler = function(evt) {
-      var node     = evt.target;
+      var el = evt.target;
       do {
-        if (node !== evt.target && node === that._root) {
+        if (el !== evt.target && el === that._root || !(that._matcher in el)) {
           return false;
         }
         // TODO matcher は documentから探索するため、
         // div > _root > p の際に、 div p なセレクタもtrueになるので厳密には不正
-        if (node[that._matcher](selector)) {
+        if (el[that._matcher](selector)) {
           break;
         }
-      } while (node = node.parentNode);
+      } while (el = el.parentNode);
 
-      return origHandler.call(node, evt);
+      return origHandler.call(el, evt);
     };
     delegateHandler._type     = type;
     delegateHandler._selector = selector;
@@ -85,9 +114,9 @@ var DomDelegation = klass.of({
   },
 
   /**
-   * @param {String} type
-   * @param {String} selector
-   * @param {EventHandler} eventHandler
+   * @param {String} [type]
+   * @param {String} [selector]
+   * @param {EventHandler} [eventHandler]
    */
   remove: function(type, selector, eventHandler) {
     var that = this;
