@@ -54,5 +54,5 @@ function detectVendorMethodName(object, methodName) {
  * @return {Boolean}
  */
 function isElement(el) {
-  return !!('nodeType' in el && el.nodeType === 1);
+  return !!(el && el.nodeType === 1);
 }

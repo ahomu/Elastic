@@ -32,7 +32,7 @@ var LayoutDomain = AbstractDomain.extends({
    */
   constructor: function(options) {
     if (this.name === UNDEFINED_UNIQUE_NAME) {
-      throw new LogicException('You must specify a unique name for the Layout')
+      throw new LogicException('You must specify a unique name for the Layout');
     }
 
     options || (options = {});
@@ -49,6 +49,9 @@ var LayoutDomain = AbstractDomain.extends({
   },
 
   /**
+   * Assign new View to element in layout.
+   * And destroy old View automatically.
+   *
    * @param {String} regionName
    * @param {ViewDomain} view
    */

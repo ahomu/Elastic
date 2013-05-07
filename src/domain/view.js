@@ -70,7 +70,7 @@ var ViewDomain = AbstractDomain.extends({
    * @param {HTMLElement} el
    */
   attachElement: function(el) {
-    if (!isElement(this.el)) {
+    if (!isElement(el)) {
       throw new RuntimeException('Gived argument `el` is not an element');
     }
 
