@@ -23,7 +23,7 @@ function looper(list, iter) {
 /**
  * @param {Object} object - traverse target object
  * @param {String} methodName
- * @returns {String}
+ * @return {String}
  */
 function detectVendorMethodName(object, methodName) {
   var upperName, detectedMethod;
@@ -47,4 +47,12 @@ function detectVendorMethodName(object, methodName) {
   } else {
     throw new RuntimeException(methodName+' not found in specified object');
   }
+}
+
+/**
+ * @param {*} el
+ * @return {Boolean}
+ */
+function isElement(el) {
+  return !!('nodeType' in el && el.nodeType === 1);
 }
