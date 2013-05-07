@@ -1,5 +1,5 @@
-/*! Elastic.js - v0.0.0 ( 2013-04-30 ) - MIT */
-(function() {
+/*! Elastic.js - v0.0.0 ( 2013-05-07 ) - MIT */
+(function(window) {
 
 "use strict";
 
@@ -244,7 +244,64 @@ function __superClosure(SubClass) {
   }
 }
 
+/**
+ * @see http://uupaa.hatenablog.com/entry/2012/02/04/145400
+ * @param {Array|Object} list
+ * @param {Function} iter
+ */
+function looper(list, iter) {
+  if (list == null) {
+    return;
+  }
 
+  var isArray = Object.prototype.toString.call(list) == '[object Array]',
+      subjects = isArray ? list : Object.keys(list),
+      i = 0,
+      iz = subjects.length,
+      subject;
+
+  for (; i<iz; i++) {
+    subject = subjects[i];
+    iter(subject, i);
+  }
+}
+
+/**
+ * @param {Object} object - traverse target object
+ * @param {String} methodName
+ * @return {String}
+ */
+function detectVendorMethodName(object, methodName) {
+  var upperName, detectedMethod;
+
+  upperName = methodName.charAt(0).toUpperCase()+methodName.slice(1);
+
+  if (methodName in object) {
+    detectedMethod = methodName;
+  } else if ('webkit'+upperName in object) {
+    detectedMethod = 'webkit' + upperName;
+  } else if ('moz' + upperName in object) {
+    detectedMethod = 'moz' + upperName;
+  } else if ('ms' + upperName in object) {
+    detectedMethod = 'ms' + upperName;
+  } else if ('o' + upperName in object) {
+    detectedMethod = 'o' + upperName;
+  }
+
+  if (detectedMethod) {
+    return detectedMethod;
+  } else {
+    throw new RuntimeException(methodName+' not found in specified object');
+  }
+}
+
+/**
+ * @param {*} el
+ * @return {Boolean}
+ */
+function isElement(el) {
+  return !!(el && el.nodeType === 1);
+}
 var AbstractException = klass.of({
   /**
    * @param {String} type
@@ -366,13 +423,58 @@ var ComponentDomain = AbstractDomain.extends({
    */
   ui: {},
 
-  handleEvent: function(evt) {
-    // event.target.webkitMatchesSelector();
+  /**
+   * instance's unique id nubmer
+   * @property {Number}
+   */
+  uid: null,
+
+  constructor: function(el, uid) {
+    this._element(el);
+    this.uid = uid;
+
+    this.setupUi();
+
+    this.onCreate();
+  },
+
+  /**
+   *
+   */
+  destroy: function() {
+    this.el = this.$el = null;
+
+    this.teardownUi();
+
+    this.onDestroy();
+  },
+
+  /**
+   * From the selector defined by this.ui, caching to explore the elements.
+   */
+  setupUi: function() {
+    var name, selector, thisUi = {};
+
+    for (name in this.ui) {
+      selector = this.ui[name];
+      thisUi[name] = '$' in window ? this.$el.find(selector)
+                                : this.el.querySelectorAll(selector);
+    }
+
+    this.ui = thisUi;
+  },
+
+  /**
+   * Release ui elements reference.
+   */
+  teardownUi: function() {
+    var name;
+
+    for (name in this.ui) {
+      this.ui[key] = null;
+      delete this.ui[key];
+    }
   }
-});
-
-var ElementDomain = AbstractDomain.extends({
-
 });
 
 var LayoutDomain = AbstractDomain.extends({
@@ -403,7 +505,7 @@ var LayoutDomain = AbstractDomain.extends({
    */
   constructor: function(options) {
     if (this.name === UNDEFINED_UNIQUE_NAME) {
-      throw new LogicException('You must specify a unique name for the Layout')
+      throw new LogicException('You must specify a unique name for the Layout');
     }
 
     options || (options = {});
@@ -420,6 +522,9 @@ var LayoutDomain = AbstractDomain.extends({
   },
 
   /**
+   * Assign new View to element in layout.
+   * And destroy old View automatically.
+   *
    * @param {String} regionName
    * @param {ViewDomain} view
    */
@@ -496,6 +601,17 @@ var LayoutDomain = AbstractDomain.extends({
   onChange: function(regionName, newView, oldView) {}
 });
 
+var ATTR_COMPONENT = 'data-component',
+    ATTR_COMPONENT_UID = 'data-component-uid';
+
+var STORE_COMPONENTS = {};
+
+var INCREMENT_COMPONENT_UID = 0;
+
+/**
+ * @class
+ * @extends AbstractDomain
+ */
 var ViewDomain = AbstractDomain.extends({
   /**
    * @property {String}
@@ -504,7 +620,7 @@ var ViewDomain = AbstractDomain.extends({
 
   /**
    *     events: {
-   *       'click .js_event_selector': 'someMethod'
+   *       'click .js_event_selector': 'someMethodName'
    *     }
    *     // $('.js_event_selector').click() => someMethod()
    *
@@ -533,6 +649,11 @@ var ViewDomain = AbstractDomain.extends({
   components: {},
 
   /**
+   * @property {DomDelegation}
+   */
+  _delegater: null,
+
+  /**
    * @constructor
    */
   constructor: function() {
@@ -542,40 +663,90 @@ var ViewDomain = AbstractDomain.extends({
     if (this.name === UNDEFINED_UNIQUE_NAME) {
       throw new LogicException('You must specify a unique name for the View')
     }
+
+    this._delegater = new DomDelegation(this.el);
+
+    if (isElement(this.el)) {
+      this.attachElement(this.el);
+    }
     this.onCreate();
   },
 
   /**
+   * Attach root element to this view.
+   * @see ViewDomain.onAttach()
    * @param {HTMLElement} el
    */
   attachElement: function(el) {
+    if (!isElement(el)) {
+      throw new RuntimeException('Gived argument `el` is not an element');
+    }
+
     this._element(el);
+    this._delegater.setRoot(el);
 
     this.onAttach(el);
+    this.setupUi();
 
     this.delegateEvents();
   },
 
+  /**
+   * Detach root element from this view.
+   * @see ViewDomain.onDetach()
+   */
   detachElement: function() {
-    this.el = this.$el = null;
-
-    this.onDetach();
-
     this.undelegateEvents();
+
+    this.teardownUi();
+    this.onDetach(this.el);
+
+    this.el = this.$el = null;
   },
 
+  /**
+   * Assign delegate events defined by `this.events`
+   */
   delegateEvents: function() {
-    // View自身のイベントに加えて、
-    // ComponentのイベントもViewで委譲して管理できるようにする
-    // delegateEventsWithComponents 的な？
+    var that = this,
+        event, selector, method,
+        CompProto, methodName, componentDelegateHandler;
+
+    // view events
+    looper(this.events, function(event_selector) {
+      method = that[that.events[event_selector]];
+      event_selector = event_selector.split(' ');
+      event = event_selector[0];
+      selector = event_selector[1];
+
+      that._delegater.add(event, selector, method, that);
+    });
+
+    // component events
+    looper(this.components, function(name) {
+      CompProto = that.components[name].prototype;
+
+      looper(CompProto.events, function(event_selector) {
+        methodName = CompProto.events[event_selector];
+        event_selector = event_selector.split(' ');
+        event = event_selector[0];
+        selector = event_selector[1];
+
+        // TODO Need delegateHandler collection for remove event handler strictly
+        componentDelegateHandler = function(evt) {
+          var component = this.getComponent(evt.target)
+          component[methodName].apply(component, arguments)
+        };
+        that._delegater.add(event, selector, componentDelegateHandler, that);
+      });
+    });
   },
 
+  /**
+   * Remove all delegated events from this view.
+   */
   undelegateEvents: function() {
-
-  },
-
-  dispatchComponent: function() {
-
+    this._delegater.remove();
   },
 
   /**
@@ -587,17 +758,87 @@ var ViewDomain = AbstractDomain.extends({
   },
 
   /**
+   * like singleton...
+   *
+   * @param {HTMLElement} el
+   * @returns {*}
+   */
+  getComponent: function(el) {
+    var componentName, componentUid;
+
+    do {
+      componentName = el.getAttribute(ATTR_COMPONENT);
+    } while(!componentName && (el = el.parentNode));
+
+    if (!componentName) {
+      throw new RuntimeException('Component name is not detected from ' + ATTR_COMPONENT)
+    }
+
+    componentUid  = el.getAttribute(ATTR_COMPONENT_UID) || INCREMENT_COMPONENT_UID++;
+
+    if (STORE_COMPONENTS[componentUid]) {
+      return STORE_COMPONENTS[componentUid];
+    } else {
+      el.setAttribute(ATTR_COMPONENT_UID, componentUid);
+      return STORE_COMPONENTS[componentUid] = new this.components[componentName](el, componentUid);
+    }
+  },
+
+  /**
+   * From the selector defined by this.ui, caching to explore the elements.
+   */
+  setupUi: function() {
+    var name, selector;
+
+    for (name in this.ui) {
+      selector = this.ui[name];
+      this.ui[name] = '$' in window ? this.$el.find(selector)
+                                    : this.el.querySelectorAll(selector);
+    }
+  },
+
+  /**
+   * Release ui elements reference.
+   */
+  teardownUi: function() {
+    var name;
+
+    for (name in this.ui) {
+      this.ui[key] = null;
+      delete this.ui[key];
+    }
+  },
+
+  /**
    *
    */
   destroy: function() {
+    this.detachElement();
+
+    // TODO destroy unused components
+
     this.onDestroy();
   },
 
   /**
+   * @abstract
+   * @chainable
+   * @param {String} html
+   * @return {*}
+   */
+  render: function(html) { this.el.innerHTML = html; return this; },
+
+  /**
+   * @abstract
    * @param {HTMLElement} el
    */
   onAttach: function(el) {},
-  onDetach: function() {}
+
+  /**
+   * @abstract
+   * @param {HTMLElement} el
+   */
+  onDetach: function(el) {}
 });
 
 var AsyncCallbackTrait = {
@@ -606,6 +847,163 @@ var AsyncCallbackTrait = {
 var ObservableTrait = {
 
 };
+var DOM_DELEGATION_UID = 0;
+
+/**
+ * Only manage  bubbling events from capturing phase.
+ *
+ * @class
+ * @extend Klass
+ */
+var DomDelegation = klass.of({
+  /**
+   * DOM Events delegation root element
+   *
+   * @type {HTMLElement}
+   */
+  _root: null,
+
+  /**
+   * Use for bubbling 'event.target' matching defined selector.
+   * If run on the WebKit when `_mather` is `webkitMathcesSelector`
+   *
+   * @type {String}
+   */
+  _matcher: null,
+
+  /**
+   * That structure object stores assigned delegate handlers.
+   *
+   * _stack : {
+   *   {EventHandler}.uid: [
+   *     {DelegateHandler}
+   *   ]
+   * }
+   *
+   * DelegateHandler has own event type and assigned selector
+   * Compare those properties when remove handler
+   *
+   * @type {Object}
+   */
+  _stack: {},
+
+  /**
+   * @constructor
+   * @param {HTMLElement} el
+   */
+  constructor: function(el) {
+    if (el) {
+      this.setRoot(el);
+    }
+  },
+
+  /**
+   * @param {HTMLElement} el
+   */
+  setRoot: function(el) {
+    if (isElement(this._root)) {
+      this.remove();
+    }
+    this._root    = el;
+    this._matcher = detectVendorMethodName(el, 'matchesSelector');
+  },
+
+  /**
+   * @param {String} type
+   * @param {String} selector
+   * @param {Function} origHandler
+   * @param {Object} [context]
+   */
+  add: function(type, selector, origHandler, context) {
+    var delegateHandler;
+
+    delegateHandler = this._createDelegateHandler(type, selector, origHandler, context);
+    this._root.addEventListener(type, delegateHandler, true);
+  },
+
+  /**
+   * @private
+   * @param {String} type
+   * @param {String} selector
+   * @param {Function} origHandler
+   * @param {Object} [context]
+   * @return {DelegateHandler}
+   */
+  _createDelegateHandler: function(type, selector, origHandler, context) {
+    var that = this, uid, delegateHandler;
+
+    delegateHandler = function(evt) {
+      var el = evt.target;
+      do {
+        if (el !== evt.target && el === that._root || !(that._matcher in el)) {
+          return false;
+        }
+        // TODO matcher は documentから探索するため、
+        // div > _root > p の際に、 div p なセレクタもtrueになるので厳密には不正
+        if (el[that._matcher](selector)) {
+          break;
+        }
+      } while (el = el.parentNode);
+
+      // TODO evt を clonedEvent.originalEventに退避させて
+      // currentTargetプロパティに that._root を指定できるようにする
+      return origHandler.call(context || el, evt);
+    };
+
+    delegateHandler._type     = type;
+    delegateHandler._selector = selector;
+
+    uid = origHandler._uid || (origHandler._uid = ++DOM_DELEGATION_UID);
+    this._stack[uid] || (this._stack[uid] = []);
+    this._stack[uid].push(delegateHandler);
+
+    return delegateHandler;
+  },
+
+  /**
+   * @param {String} [type]
+   * @param {String} [selector]
+   * @param {EventHandler} [eventHandler]
+   */
+  remove: function(type, selector, eventHandler) {
+    var that = this;
+
+    looper(this._stack, function(handlerUid) {
+      // handlerUid is number, beacause that is key string from object
+      if (eventHandler && eventHandler._uid && eventHandler._uid != handlerUid) {
+        return;
+      }
+      looper(that._stack[handlerUid], function(delegateHandler, i) {
+        if (that._isRemoveApprovable(type, selector, delegateHandler)) {
+          that._stack[handlerUid].splice(i, 1);
+          that._root.removeEventListener(delegateHandler._type, delegateHandler, true);
+        }
+      });
+    })
+  },
+
+  /**
+   * @private
+   * @param {String} type
+   * @param {String} selector
+   * @param {DelegateHandler} removeHandler
+   */
+  _isRemoveApprovable: function(type, selector, removeHandler) {
+    return (!type || type === removeHandler._type) && (!selector || selector === removeHandler._selector)
+  }
+});
+
+/**
+ * @class EventHandler
+ * @extends Event
+ * @property {Number} _uid
+ */
+
+/**
+ * @class DelegateHandler
+ * @property {String} _type
+ * @property {String} _selector
+ */
 var History = klass.of({
   constructor: function() {
 
@@ -626,13 +1024,20 @@ var Validator = klass.of({
 
   }
 });
-window.Elastic = {
+var Elastic = {
+  // like OOP
   klass : klass,
+
+  // shorthand
+  Layout   : LayoutDomain,
+  View     : ViewDomain,
+  Component: ComponentDomain,
+
+  // classes
   domain: {
     Layout   : LayoutDomain,
     View     : ViewDomain,
-    Compontnt: ComponentDomain,
-    Element  : ElementDomain
+    Compontnt: ComponentDomain
   },
   exception: {
     Runtime  : RuntimeException,
@@ -642,7 +1047,8 @@ window.Elastic = {
     History  : History,
     Router   : Router,
     Storage  : Storage,
-    Validator: Validator
+    Validator: Validator,
+    DomDelegation: DomDelegation
   },
   trait: {
     AsyncCallback: AsyncCallbackTrait,
@@ -651,10 +1057,21 @@ window.Elastic = {
 };
 
 // for RequireJS
-if (typeof window.define == 'function' && typeof window.define.amd == 'object') {
+if (typeof define == 'function' && typeof define.amd == 'object' && define.amd) {
   window.define(function() {
-    return window.Elastic;
+    return Elastic;
   });
 }
+// for Node.js & browserify
+else if (typeof module == 'object' && module &&
+         typeof exports == 'object' && exports &&
+         module.exports == exports
+  ) {
+  module.exports = Elastic;
+}
+// for Browser
+else {
+  window.Elastic = Elastic;
+}
 
-})();
+})(this);
