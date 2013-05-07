@@ -8,6 +8,10 @@
  * @param {Function} iter
  */
 function looper(list, iter) {
+  if (list == null) {
+    return;
+  }
+
   var isArray = Object.prototype.toString.call(list) == '[object Array]',
       subjects = isArray ? list : Object.keys(list),
       i = 0,

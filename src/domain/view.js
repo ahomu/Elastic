@@ -187,12 +187,12 @@ var ViewDomain = AbstractDomain.extends({
    * From the selector defined by this.ui, caching to explore the elements.
    */
   setupUi: function() {
-    var engine = '$' in window ? this.$el.find : this.el.querySelectorAll,
-        name, selector;
+    var name, selector;
 
     for (name in this.ui) {
       selector = this.ui[name];
-      this.ui[name] = engine(selector);
+      this.ui[name] = '$' in window ? this.$el.find(selector)
+                                    : this.el.querySelectorAll(selector);
     }
   },
 
