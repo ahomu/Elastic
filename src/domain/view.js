@@ -1,5 +1,12 @@
 'use strict';
 
+var ATTR_COMPONENT = 'data-component',
+    ATTR_COMPONENT_UID = 'data-component-uid';
+
+var STORE_COMPONENTS = {};
+
+var INCREMENT_COMPONENT_UID = 0;
+
 /**
  * @class
  * @extends AbstractDomain
@@ -101,42 +108,37 @@ var ViewDomain = AbstractDomain.extends({
    */
   delegateEvents: function() {
     var that = this,
-        event, selector, method;
+        event, selector, method,
+        CompProto, methodName, componentDelegateHandler;
 
+    // view events
     looper(this.events, function(event_selector) {
       method = that[that.events[event_selector]];
       event_selector = event_selector.split(' ');
       event = event_selector[0];
       selector = event_selector[1];
 
-      that._delegater.add(event, selector, method);
+      that._delegater.add(event, selector, method, that);
     });
 
-    // components event
-//    looper(this.components, function(component) {
-//      looper(component.events, function(type_selector) {
-//        var type, selector, handler;
-//
-//        type_selector = type_selector.split(' ');
-//        type     = type_selector[0];
-//        selector = type_selector[1];
-//        handler  = component[component.events[type_selector]];
-//
-//        if (typeof handler !== 'function') {
-//          throw new LogicException('Specified method name is not function');
-//        }
-//
-//        el.addEventListener(type, function(evt) {
-//          // TODO detect function's vendor prefix required
-//          if (el.webkitMatchesSelector(selector, evt.currentTarget)) {
-//            handler.call(component, evt);
-//          };
-//        }, false);
-//      });
-//    });
+    // component events
+    looper(this.components, function(name) {
+      CompProto = that.components[name].prototype;
 
-    // or instantly all specified event type binding
-    // and when that events fired then detect component from event.currentTarget & call components method
+      looper(CompProto.events, function(event_selector) {
+        methodName = CompProto.events[event_selector];
+        event_selector = event_selector.split(' ');
+        event = event_selector[0];
+        selector = event_selector[1];
+
+        // TODO Need delegateHandler collection for remove event handler strictly
+        componentDelegateHandler = function(evt) {
+          var component = this.getComponent(evt.target)
+          component[methodName].apply(component, arguments)
+        };
+        that._delegater.add(event, selector, componentDelegateHandler, that);
+      });
+    });
   },
 
   /**
@@ -152,6 +154,33 @@ var ViewDomain = AbstractDomain.extends({
    */
   use: function(alias, component) {
     this.components[alias] = component;
+  },
+
+  /**
+   * like singleton...
+   *
+   * @param {HTMLElement} el
+   * @returns {*}
+   */
+  getComponent: function(el) {
+    var componentName, componentUid;
+
+    do {
+      componentName = el.getAttribute(ATTR_COMPONENT);
+    } while(!componentName && (el = el.parentNode));
+
+    if (!componentName) {
+      throw new RuntimeException('Component name is not detected from ' + ATTR_COMPONENT)
+    }
+
+    componentUid  = el.getAttribute(ATTR_COMPONENT_UID) || INCREMENT_COMPONENT_UID++;
+
+    if (STORE_COMPONENTS[componentUid]) {
+      return STORE_COMPONENTS[componentUid];
+    } else {
+      el.setAttribute(ATTR_COMPONENT_UID, componentUid);
+      return STORE_COMPONENTS[componentUid] = new this.components[componentName](el, componentUid);
+    }
   },
 
   /**
@@ -184,6 +213,9 @@ var ViewDomain = AbstractDomain.extends({
    */
   destroy: function() {
     this.detachElement();
+
+    // TODO destroy unused components
+
     this.onDestroy();
   },
 

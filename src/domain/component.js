@@ -25,11 +25,25 @@ var ComponentDomain = AbstractDomain.extends({
    */
   ui: {},
 
-  constructor: function(el) {
+  /**
+   * instance's unique id nubmer
+   * @property {Number}
+   */
+  uid: null,
 
+  constructor: function(el, uid) {
+    this._element(el);
+    this.uid = uid;
+
+    this.onCreate();
   },
 
-  handleEvent: function(evt) {
-    // event.target.webkitMatchesSelector();
+  /**
+   *
+   */
+  destroy: function() {
+    this.el = this.$el = null;
+
+    this.onDestroy();
   }
 });

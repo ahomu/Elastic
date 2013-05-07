@@ -70,11 +70,12 @@ var DomDelegation = klass.of({
    * @param {String} type
    * @param {String} selector
    * @param {Function} origHandler
+   * @param {Object} [context]
    */
-  add: function(type, selector, origHandler) {
+  add: function(type, selector, origHandler, context) {
     var delegateHandler;
 
-    delegateHandler = this._createDelegateHandler(type, selector, origHandler);
+    delegateHandler = this._createDelegateHandler(type, selector, origHandler, context);
     this._root.addEventListener(type, delegateHandler, true);
   },
 
@@ -83,9 +84,10 @@ var DomDelegation = klass.of({
    * @param {String} type
    * @param {String} selector
    * @param {Function} origHandler
+   * @param {Object} [context]
    * @return {DelegateHandler}
    */
-  _createDelegateHandler: function(type, selector, origHandler) {
+  _createDelegateHandler: function(type, selector, origHandler, context) {
     var that = this, uid, delegateHandler;
 
     delegateHandler = function(evt) {
@@ -101,8 +103,11 @@ var DomDelegation = klass.of({
         }
       } while (el = el.parentNode);
 
-      return origHandler.call(el, evt);
+      // TODO evt を clonedEvent.originalEventに退避させて
+      // currentTargetプロパティに that._root を指定できるようにする
+      return origHandler.call(context || el, evt);
     };
+
     delegateHandler._type     = type;
     delegateHandler._selector = selector;
 
@@ -122,7 +127,8 @@ var DomDelegation = klass.of({
     var that = this;
 
     looper(this._stack, function(handlerUid) {
-      if (eventHandler && eventHandler._uid && eventHandler._uid !== handlerUid) {
+      // handlerUid is number, beacause that is key string from object
+      if (eventHandler && eventHandler._uid && eventHandler._uid != handlerUid) {
         return;
       }
       looper(that._stack[handlerUid], function(delegateHandler, i) {
