@@ -1,5 +1,7 @@
 'use strict';
 
+var UNDEFINED_UNIQUE_NAME = '__UNDEFINED__';
+
 /**
  * @abstract
  * @class

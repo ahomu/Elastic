@@ -3,8 +3,7 @@
 
 "use strict";
 
-var DEFINE_NOT_WRITABLE   = {writable: false},
-    UNDEFINED_UNIQUE_NAME = '__UNDEFINED__';
+var DEFINE_NOT_WRITABLE   = {writable: false};
 
 /**
  * Base Class of OOP feature
@@ -350,6 +349,13 @@ var RuntimeException = AbstractException.extends({
   type: 'Runtime'
 });
 
+var UNDEFINED_UNIQUE_NAME = '__UNDEFINED__';
+
+/**
+ * @abstract
+ * @class
+ * @extends Klass
+ */
 var AbstractDomain = klass.of({
 
   /**
@@ -601,7 +607,7 @@ var LayoutDomain = AbstractDomain.extends({
   onChange: function(regionName, newView, oldView) {}
 });
 
-var ATTR_COMPONENT = 'data-component',
+var ATTR_COMPONENT     = 'data-component',
     ATTR_COMPONENT_UID = 'data-component-uid';
 
 var STORE_COMPONENTS = {};

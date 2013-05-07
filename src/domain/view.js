@@ -1,6 +1,6 @@
 'use strict';
 
-var ATTR_COMPONENT = 'data-component',
+var ATTR_COMPONENT     = 'data-component',
     ATTR_COMPONENT_UID = 'data-component-uid';
 
 var STORE_COMPONENTS = {};

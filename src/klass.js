@@ -1,7 +1,6 @@
 'use strict'
 
-var DEFINE_NOT_WRITABLE   = {writable: false},
-    UNDEFINED_UNIQUE_NAME = '__UNDEFINED__';
+var DEFINE_NOT_WRITABLE   = {writable: false};
 
 /**
  * Base Class of OOP feature

@@ -70,8 +70,8 @@ describe 'Klass of basic OOP feture provider', ->
         ohmy + ' God'
 
     JesusMan = HelloMan.extends
-      say: ->
-        @super 'say', arguments
+#      say: ->
+#        @super 'say', arguments
       god: ->
         @super 'god', arguments
 
